@@ -1,31 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>Jednoduchý dotazník</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dotazník</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; }
-        form { display: flex; flex-direction: column; width: 300px; gap: 10px; }
-        input, button { padding: 10px; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            padding-top: 50px; 
+            background-color: #f4f4f9;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 320px;
+        }
+        form { display: flex; flex-direction: column; gap: 15px; }
+        label { font-weight: bold; color: #333; }
+        input { 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        button { 
+            padding: 12px; 
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover { background-color: #0056b3; }
+        
+        /* Styl pro hezkou hlášku */
+        #success-message {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <form id="dotaznik">
-        <label>Jméno a příjmení:</label>
-        <input type="text" id="jmeno" required>
-        
-        <label>Číslo občanského průkazu:</label>
-        <input type="text" id="op" required>
-        
-        <button type="submit">Odeslat data</button>
-    </form>
+    <div class="container">
+        <form id="dotaznik">
+            <label for="jmeno">Jméno a příjmení:</label>
+            <input type="text" id="jmeno" placeholder="Jan Novák" required>
+            
+            <label for="op">Číslo občanského průkazu:</label>
+            <input type="text" id="op" placeholder="123456789" required>
+            
+            <button type="submit" id="submit-btn">Odeslat</button>
+        </form>
+
+        <div id="success-message">
+            ✓ Data byla úspěšně odeslána!
+        </div>
+    </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxn5RksG2f-dhj3X9Xef4ITzgvLwazw23pwYgiNWEAEctMnyB4XiPrquyykZdBjU-CC/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxn5RksG2f-dhj3X9Xef4ITzgvLwazw23pwYgiNWEAEctMnyB4XiPrquyykZdBjU-CC/exec'; 
         const form = document.getElementById('dotaznik');
+        const msg = document.getElementById('success-message');
+        const btn = document.getElementById('submit-btn');
 
         form.addEventListener('submit', e => {
             e.preventDefault();
+            
+            // Vizuální zpětná vazba - změna textu tlačítka při odesílání
+            btn.disabled = true;
+            btn.innerText = 'Odesílám...';
+
             const data = {
                 jmeno: document.getElementById('jmeno').value,
                 op: document.getElementById('op').value
@@ -33,16 +91,27 @@
 
             fetch(scriptURL, {
                 method: 'POST',
-                mode: 'no-cors', // Důležité pro Apps Script, pokud nechceš řešit CORS složitě
+                mode: 'no-cors',
                 cache: 'no-cache',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             })
             .then(() => {
-                alert('Data byla odeslána!');
+                // Místo alertu zobrazíme náš div
+                msg.style.display = 'block';
                 form.reset();
+                btn.disabled = false;
+                btn.innerText = 'Odeslat';
+                
+                // Po 5 sekundách hláška zmizí
+                setTimeout(() => { msg.style.display = 'none'; }, 5000);
             })
-            .catch(error => console.error('Chyba!', error.message));
+            .catch(error => {
+                console.error('Chyba!', error.message);
+                btn.disabled = false;
+                btn.innerText = 'Odeslat';
+                alert('Něco se nepovedlo, zkuste to znovu.');
+            });
         });
     </script>
 </body>
